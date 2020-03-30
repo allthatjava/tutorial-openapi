@@ -1,0 +1,179 @@
+swagger: "2.0"            # Required
+info:                     # Required
+  version: "1.0"          # Required
+  title: "Sample of Swagger(OpenAPI) 2.0"   # Required
+paths:                    # Required
+  /customers:
+    get:
+      summary: List of Customers
+      description: Get method that will return list of **Customers**
+      tags:
+        - Customers
+      operationId: listCustomers                  # Codegen will use this name as method name
+      produces:
+        - application/json                        # Resposne content type
+      parameters:
+        - $ref: '#/parameters/pageNumberParam'
+        - $ref: '#/parameters/pageSizeParam'
+      responses:          # Required by 'get'
+        200:
+          description: List of Customer           # Required by 'responses'
+          schema:                         # Content's type
+            $ref: '#/definitions/CustomerList'
+    post:
+      summary: Create a customer
+      description: This will create a **Customers**
+      tags:
+        - Customers
+      operationId: addCustomer
+      consumes:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/customer'
+      responses:
+        201:
+          description: Customer created
+          headers:
+            location:                           # custom header field name (You added)
+              type: string
+              description: Location of the created customer. e.g. http://localhost/customers/{assignedIdValue}
+  /customers/{customerId}:
+    get:
+      summary: Returs a customer
+      description: This will return a **Customers** object
+      tags:
+        - Customers
+      operationId: getCustomer                    # Codegen will use this name as method name
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/customerIdPathParam'
+      responses:
+        200:
+          description: Returns Customer Object
+          schema:
+            $ref: '#/definitions/Customer'
+    put:
+      summary: Updates a customer
+      description: This will update a **Customers** object
+      tags:
+        - Customers
+      operationId: updateCustomer
+      parameters:
+        - $ref: '#/parameters/customerIdPathParam'  # path param
+        - $ref: '#/parameters/customer'             # request body param
+      responses:
+        204:
+          description: Customer Updated
+    delete:
+      summary: Deletes a customer
+      description: This will delete the given **Customers** object
+      tags:
+        - Customers
+      operationId: deleteCustomer                    # Codegen will use this name as method name
+      parameters:
+        - $ref: '#/parameters/customerIdPathParam'
+      responses:
+        200:
+          description: Customer deleted
+definitions:
+  Address:
+    type: object
+    description: Address
+    properties:
+      street1:
+        type: string
+        example: 123 abc st.
+      street2:
+        type: string
+        example: unit 20
+      provinceCode:
+        type: string
+        minLength: 2
+        maxLength: 2
+        enum:
+          - 'ON'          # Without quotation it will display 'true' instead on 'ON'.
+          - QC
+          - BC
+      postalCode:
+        type: integer
+        maxLength: 5
+        example: 12345
+  Customer:
+    type: object
+    description: Customer
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      fullName:
+        type: string
+        minLength: 2
+        maxLength: 100
+        example: John Smith
+      age:
+        type: integer
+        example: 40
+      height:
+        description: Height in Feet format
+        type: number
+        format: float             # Optional for detail format
+        example: 6.1
+      address:
+        $ref: '#/definitions/Address'
+  CustomerList:
+    type: array                   # Array(List) of the following items
+    items:                        # If above type is 'array', 'items' must be present
+      $ref: '#/definitions/Customer'
+  Car:
+    type: object
+    properties:
+      drivable:
+        type: boolean
+  Sports:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Car'
+    properties:
+      engineLocation:
+        type: string
+        enum:
+          - FRONT
+          - REAR
+  Truck:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Car'
+    properties:
+      flatbedSize:
+        description: Square Feet
+        type: integer
+        example: 30
+parameters:
+  customer:
+    name: customerObj
+    in: body
+    schema:
+      type: object
+      $ref: '#/definitions/Customer'
+  pageNumberParam:
+    name: pageNumber
+    description: Page Number
+    in: query
+    schema:
+      type: integer
+  pageSizeParam:
+    name: pageSize
+    description: The size of a page
+    in: query
+    schema:
+      type: integer
+  customerIdPathParam:
+    name: customerId
+    description: Customer's Id
+    in: path
+    schema:
+      type: string
+      format: uuid
+

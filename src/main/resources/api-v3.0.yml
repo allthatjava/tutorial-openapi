@@ -1,0 +1,212 @@
+openapi: 3.0.3            # Required
+info:                     # Required
+  version: '1.0'          # Required
+  title: Sample of Swagger(OpenAPI) 3.0   # Required
+paths:                    # Required
+  /customers:
+    get:
+      summary: List of Customers
+      description: Get method that will return list of **Customers**
+      tags:
+        - Customers
+      operationId: listCustomers                  # Codegen will use this name as method name
+      parameters:
+        - $ref: '#/components/parameters/pageNumberParam'
+        - $ref: '#/components/parameters/pageSizeParam'
+      responses:          # Required by 'get'
+        200:
+          description: List of Customer           # Required by 'responses'
+          content:
+            application/json:                 # Resposne content type
+              schema:                         # Content's type
+                $ref: '#/components/schemas/CustomerList'
+      security: []
+    post:
+      summary: Create a customer
+      description: This will create a **Customers**
+      tags:
+        - Customers
+      operationId: addCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        201:
+          description: Customer created
+          headers:
+            location:                           # custom header field name (You added)
+              description: Location of the created customer
+              schema:
+                type: string
+                example: http://localhost/customers/{assignedIdValue}
+        400:
+          description: Bad Request
+        409:
+          description: Conflict
+  /customers/{customerId}:
+    get:
+      summary: Returs a customer
+      description: This will return a **Customers** object
+      tags:
+        - Customers
+      operationId: getCustomer
+      parameters:
+        - $ref: '#/components/parameters/customerIdPathParam'
+      responses:
+        200:
+          description: Returns Customer Object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        400:
+          description: Bad Request
+        404:
+          description: Not found
+      security: []
+    put:
+      summary: Updates a customer
+      description: This will update a **Customers** object
+      tags:
+        - Customers
+      operationId: updateCustomer
+      parameters:
+        - $ref: '#/components/parameters/customerIdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        204:
+          description: Customer Updated
+        400:
+          description: Bad Request
+        409:
+          description: Conflict
+    delete:
+      summary: Deletes a customer
+      description: This will delete the given **Customers** object
+      tags:
+        - Customers
+      operationId: deleteCustomer
+      parameters:
+        - $ref: '#/components/parameters/customerIdPathParam'
+      responses:
+        200:
+          description: Customer Deleted
+        400:
+          description: Bad Request
+security:
+  - BasicAuth: []
+  - JwtAuthToken: []
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    JwtAuthToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    pageNumberParam:
+      name: pageNumber
+      description: Page Number
+      in: query
+      schema:
+        type: integer
+    pageSizeParam:
+      name: pageSize
+      description: The size of a page
+      in: query
+      schema:
+        type: integer
+    customerIdPathParam:
+      name: customerId
+      description: Customer's Id
+      in: path
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    Address:
+      type: object
+      description: Address
+      properties:
+        street1:
+          type: string
+          example: 123 abc st.
+        street2:
+          type: string
+          example: unit 20
+        provinceCode:
+          type: string
+          minLength: 2
+          maxLength: 2
+          enum:
+            - 'ON'          # Without quotation it will display 'true' instead on 'ON'.
+            - QC
+            - BC
+        postalCode:
+          type: integer
+          maxLength: 5
+          example: 12345
+    Customer:
+      type: object
+      description: Customer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        fullName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: John Smith
+        age:
+          type: integer
+          example: 40
+        height:
+          description: Height in Feet format
+          type: number
+          format: float             # Optional for detail format
+          example: 6.1
+        address:
+          $ref: '#/components/schemas/Address'
+    CustomerList:
+      type: array                   # Array(List) of the following items
+      items:                        # If above type is 'array', 'items' must be present
+        $ref: '#/components/schemas/Customer'
+    Car:
+      type: object
+      properties:
+        drivable:
+          type: boolean
+    Sports:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Car'
+      properties:
+        engineLocation:
+          type: string
+          enum:
+            - FRONT
+            - REAR
+    Truck:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Car'
+      properties:
+        flatbedSize:
+          description: Square Feet
+          type: integer
+          example: 30
+
+
+
